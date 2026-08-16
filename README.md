@@ -2,7 +2,17 @@
 
 让 DeepSeek Harness 里的 AI **少说废话**：像聪明的穴居人一样极简输出，技术信息完整保留。
 
-> **免责声明（关于「省 65% 输出 token」）**：「平均省 65% 输出 token」是 [caveman 官方](https://github.com/JuliusBrussee/caveman) 基准测试的数据，**本 dsh 移植版尚未实测**，实际节省因场景、模型、任务类型而异。caveman 官方自己就承认：只省**输出** token，输入和推理 token 不省；且 skill 本身每轮额外占约 1-1.5k 输入 token，**短回答可能反而更贵**。真正省 token 的大头在 [dsh-headroom](https://github.com/wjxn13/dsh-headroom) 的缓存命中（99.9%），输出精简是锦上添花——请以你自己的实测为准。
+> **本机实测（DeepSeek V4-Flash，8 任务 × 5 档，2026-08-17）**：
+>
+> | 档位 | 平均输出 token | 节省 |
+> |---|---|---|
+> | baseline（正常） | 910 | — |
+> | lite | 282 | 69% |
+> | full（默认） | 112 | 88% |
+> | ultra | 76 | 92% |
+> | wenyan-full | 114 | 88% |
+>
+> 注：这是**输出 token** 的节省，输入和推理 token 不省；且 skill 本身每轮额外占约 1-1.5k 输入 token，**短回答可能反而更贵**。真正省 token 的大头在 [dsh-headroom](https://github.com/wjxn13/dsh-headroom) 的缓存命中（99.9%），输出精简是锦上添花。基准脚本 `benchmark/benchmark_output_tokens.py` 可复现。
 
 > **「穴居人」是什么？** 源自英文梗 `why use many word when few word do trick`（能少说为什么多说）。穴居人（caveman）在西方文化里是「语言能力有限、只会蹦最核心词汇」的刻板印象。中文里更直观的类比是**电报体**「母病速归」或**文言文**「言简意赅」——删掉所有客套、修饰、语气词，只留信息最核心的词。技术信息一个字不少，废话一个不留。
 
@@ -45,7 +55,7 @@ caveman 有三层：skill（输出精简）、proxy（输入压缩）、browse�
 |---|---|---|
 | 省哪侧 | 输入 token（工具 schema + 跨轮去重） | 输出 token（删废话） |
 | 机制 | Headroom 代理，无损保缓存 | 提示词规则，有损删修饰 |
-| 省钱大头 | 99.9% 缓存命中（折扣价） | 65% 输出精简（官方数据，未实测） |
+| 省钱大头 | 99.9% 缓存命中（折扣价） | 88% 输出精简（本机实测） |
 
 一个管**进**（把发给模型的输入压到最省，还不破坏缓存），一个管**出**（把模型吐出来的输出压到最省）。两个都装，token 消耗逼近理论下限。
 
