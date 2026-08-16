@@ -1,0 +1,35 @@
+{
+  "name": "dsh-caveman",
+  "version": "0.1.0",
+  "description": "极致精简输出模式：让 AI 少说废话，平均省 65% 输出 token，技术信息完整保留（caveman 的 DeepSeek Harness 移植，只含 skill 层）",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.js",
+    "cordis.patch.yml",
+    "skills"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "token",
+    "caveman",
+    "输出精简",
+    "省token"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": "^22.19.0 || >=24.0.0"
+  }
+}

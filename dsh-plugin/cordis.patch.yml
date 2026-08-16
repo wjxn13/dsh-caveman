@@ -1,0 +1,4 @@
+# 本 bundle 向 profile 贡献一行配置。dsh plugin add 会追加这行到 profile 的 dsh.profile.bundles。
+- insert:
+    - id: dsh-caveman
+      name: dsh-caveman
