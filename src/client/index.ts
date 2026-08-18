@@ -27,25 +27,24 @@ export function apply(ctx: ClientContext): void {
   ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'dsh-caveman: copy dictionaries')
 
   const t = ctx.locale.bind(NS) as CavemanPanelInjected['t']
-  const remote = ctx.get('remote') as { command?: { execute: (agentId: unknown, line: string) => Promise<unknown> } } | undefined
-  const sessions = ctx.get('sessions') as { current?: () => { sessionId: string } | undefined } | undefined
+  const remote = ctx.get('remote') as { commands?: { execute: (line: string) => Promise<unknown> } } | undefined
 
   const runCommand = async (line: string): Promise<{ kind: 'success' | 'error'; text: string }> => {
-    let agentId: unknown = 'current'
-    try {
-      const current = sessions?.current?.()
-      if (current !== undefined) agentId = current.sessionId
-    } catch { /* keep 'current' */ }
-    if (remote?.command?.execute === undefined) {
+    if (remote?.commands?.execute === undefined) {
       return { kind: 'error', text: t('error').replace('{message}', 'host command channel unavailable') }
     }
     try {
-      const raw = await remote.command.execute(agentId, line)
-      const result = (raw as { result?: { kind?: string; text?: string } } | undefined)?.result
-      return {
-        kind: result?.kind === 'error' ? 'error' : 'success',
-        text: result?.text ?? String(raw),
+      const raw = await remote.commands.execute(line)
+      // invoke() returns { ok: true, value: { commandId, result: { kind, text } } } | { ok: false, error }
+      const value = (raw as { value?: { result?: { kind?: string; text?: string } } } | undefined)?.value
+      const result = value?.result
+      if (result?.kind === 'error') {
+        return { kind: 'error', text: result.text ?? 'unknown command error' }
       }
+      if (result?.kind === 'success') {
+        return { kind: 'success', text: result.text ?? '' }
+      }
+      return { kind: 'error', text: String(raw) }
     } catch (failure) {
       return { kind: 'error', text: failure instanceof Error ? failure.message : String(failure) }
     }
