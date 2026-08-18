@@ -48,6 +48,10 @@ export function apply(ctx: Context): void {
     scope = settingsCtx.settings.register('dsh-caveman', Config)
     state = scope.get()
     console.error('[dsh-caveman] namespace registered, state=' + JSON.stringify(state))
+    console.error('[dsh-caveman] describe immediately after register:', JSON.stringify(settingsCtx.settings.describe().map((d: any) => d.ns)))
+    setTimeout(() => {
+      console.error('[dsh-caveman] describe after 3s:', JSON.stringify(settingsCtx.settings.describe().map((d: any) => d.ns)))
+    }, 3000)
     scope.watch((next: CavemanConfig) => { state = next })
   })
 
