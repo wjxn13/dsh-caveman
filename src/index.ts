@@ -37,18 +37,22 @@ const Config = z.object({
 })
 
 export function apply(ctx: Context): void {
+  ctx.logger?.info('[dsh-caveman] apply() entered')
   let scope: { update: (patch: object) => Promise<void>; get: () => CavemanConfig; watch: (cb: (next: CavemanConfig) => void) => () => void } | undefined
   let state: CavemanConfig = { enabled: false, level: DEFAULT_LEVEL }
 
   // Register the settings namespace once the settings service is actually
   // ready (async init). Mirrors installSettingsSection's ctx.inject timing.
   ctx.inject(['settings'], (settingsCtx: any) => {
+    ctx.logger?.info('[dsh-caveman] ctx.inject settings callback fired')
     scope = settingsCtx.settings.register('dsh-caveman', Config)
     state = scope.get()
+    ctx.logger?.info('[dsh-caveman] namespace registered, state=' + JSON.stringify(state))
     scope.watch((next: CavemanConfig) => { state = next })
   })
 
   ctx.effect(function* () {
+    ctx.logger?.info('[dsh-caveman] effect: registering section + commands')
     // One lifetime section; text resolves per assembly from the live state.
     yield ctx.systemPrompt.section({
       name: 'caveman',
