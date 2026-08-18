@@ -1,0 +1,51 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--dsw-color-border, rgba(0, 0, 0, 0.1));
+  border-radius: 8px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.label {
+  font-size: 13px;
+  color: var(--dsw-color-text-secondary, rgba(0, 0, 0, 0.6));
+}
+
+.value {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.notes {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--dsw-color-text-secondary, rgba(0, 0, 0, 0.6));
+  line-height: 1.5;
+}
+
+.notesTitle {
+  font-weight: 500;
+  color: var(--dsw-color-text, rgba(0, 0, 0, 0.85));
+}
