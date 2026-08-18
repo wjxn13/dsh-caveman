@@ -9,6 +9,7 @@ import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
 import { bindSnapshotSelector } from '@deepseek-ai/dsh-client-web-react'
 import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
 import type {} from '@deepseek-ai/dsh-client-locale/client'
+import type {} from '@deepseek-ai/dsh-api-remotes/client'
 import { CavemanPanel } from './CavemanPanel.tsx'
 import type { CavemanConfig, CavemanPanelInjected } from './CavemanPanel.tsx'
 import { en, zh, type CavemanPanelKey } from './locales.ts'
@@ -21,7 +22,7 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
 
 const NS = 'dsh-caveman'
 
-export const inject = ['slots', 'locale', 'settingsScope']
+export const inject = ['slots', 'locale', 'connection', 'remote', 'settingsScope']
 
 export function apply(ctx: ClientContext): void {
   ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'dsh-caveman: copy dictionaries')
