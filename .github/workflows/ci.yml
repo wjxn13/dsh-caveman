@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  test:
+  build:
     strategy:
       fail-fast: false
       matrix:
@@ -16,5 +16,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Run plugin register test
-        run: node tests/test_plugin_register.mjs
+      - name: Install deps
+        run: npm install
+      - name: Build plugin (host + client)
+        run: node scripts/build.mjs

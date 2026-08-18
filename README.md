@@ -25,16 +25,24 @@ caveman 有三层：skill（输出精简）、proxy（输入压缩）、browse�
 - **输出精简是 dsh 生态空白**——dsh 自带机制（稳定前缀缓存 + 工具结果瘦身 + 上下文压缩）和 [dsh-headroom](https://github.com/wjxn13/dsh-headroom)（Headroom 请求层输入压缩）全是**输入侧**，没人碰输出侧。
 - **输入 proxy 不碰**——caveman 的输入 proxy 是有损压缩，会破坏 dsh-headroom 辛苦保住的 99.9% 前缀缓存，两个代理在请求链路上打架。输入侧交给 dsh-headroom，本插件只管输出侧，两者互补不冲突。
 
-## 档位
+## 设置页开关（推荐）
 
-`/caveman lite|full|ultra|wenyan-lite|wenyan-full|wenyan-ultra|off`，默认 `full`。
+本插件在 DSH Web 的 **设置 → 输出精简** 页提供全局开关：
+
+- **开关**：开启后，精简规则注入每次请求的 system prompt，**跨会话一直生效**（状态存 settings，重启后保持）。
+- **档位**：点选 lite / full / ultra / wenyan，热生效，下一次请求即应用。
+- 开关关闭时，说「少说废话」也不生效（总开关优先）。
+
+也可在对话里说「少说废话」「精简」「说重点」或 `/caveman` 触发 skill 层（单会话生效，换会话需重触发）。
+
+## 档位
 
 | 档位 | 效果 |
 |---|---|
 | lite | 删填充/hedging，保留完整句子 |
 | full（默认） | 短句碎片、短同义词，不叙述工具调用 |
 | ultra | 一词够就不两词，每事实只述一次 |
-| wenyan-* | 中文文言：字面省 80-90%（字符不是 token），高密度信息 |
+| wenyan-full | 中文文言：字面省 80-90%（字符不是 token），高密度信息 |
 
 示例（"为什么 React 组件重复渲染？"）：
 - full："每次渲染新对象引用。内联对象 prop = 新引用 = 重渲染。useMemo 包之。"
@@ -62,13 +70,16 @@ caveman 有三层：skill（输出精简）、proxy（输入压缩）、browse�
 ## 安装
 
 ```bash
-dsh plugin --profile web add "github:wjxn13/dsh-caveman#path:/dsh-plugin"
+dsh plugin --profile web add "github:wjxn13/dsh-caveman"
 ```
 
-装完重启 profile，对话里说"少说废话"或调用 `/caveman` 即触发。
+装完重启 profile：打开 **设置 → 输出精简** 用开关，或对话里说「少说废话」/`/caveman` 触发 skill。
 
 ## 测试
 
 ```bash
-node tests/test_plugin_register.mjs
+npm install
+node scripts/build.mjs    # 构建 host + client，验证源码可编译
 ```
+
+真实功能验证：装进隔离测试实例，设置页「输出精简」出现开关。
