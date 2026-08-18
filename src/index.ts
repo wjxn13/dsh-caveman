@@ -9,8 +9,11 @@
  * contributes nothing, which is exactly "off". State lives in settings, so the
  * toggle survives restarts.
  *
- * Commands (caveman-on / caveman-off / caveman-level / caveman-status) drive
- * the state from the browser settings panel through the standard command seam.
+ * The namespace is registered through `ctx.inject(["settings"], ...)` — the
+ * same timing the official `installSettingsSection` helper uses — because the
+ * settings service initializes asynchronously (loads the document before it
+ * becomes injectable). Declaring `settings` in the plugin's `inject` array and
+ * calling `ctx.settings.register` at the top of `apply()` races that init.
  */
 
 import type { Context } from '@deepseek-ai/cordis'
@@ -21,7 +24,7 @@ import type {} from '@deepseek-ai/dsh-settings'
 import { DEFAULT_LEVEL, LEVELS, PLUGIN_NAME, SECTION_ORDER, type CavemanLevel } from './constants.ts'
 
 export const name = PLUGIN_NAME
-export const inject = ['systemPrompt', 'commands', 'settings']
+export const inject = ['systemPrompt', 'commands']
 
 interface CavemanConfig {
   enabled: boolean
@@ -34,15 +37,18 @@ const Config = z.object({
 })
 
 export function apply(ctx: Context): void {
-  const scope = ctx.settings.register('dsh-caveman', Config)
-  let state: CavemanConfig = scope.get()
+  let scope: { update: (patch: object) => Promise<void>; get: () => CavemanConfig; watch: (cb: (next: CavemanConfig) => void) => () => void } | undefined
+  let state: CavemanConfig = { enabled: false, level: DEFAULT_LEVEL }
+
+  // Register the settings namespace once the settings service is actually
+  // ready (async init). Mirrors installSettingsSection's ctx.inject timing.
+  ctx.inject(['settings'], (settingsCtx: any) => {
+    scope = settingsCtx.settings.register('dsh-caveman', Config)
+    state = scope.get()
+    scope.watch((next: CavemanConfig) => { state = next })
+  })
 
   ctx.effect(function* () {
-    // Keep the local mirror in step with committed settings changes.
-    yield scope.watch((next) => {
-      state = next
-    })
-
     // One lifetime section; text resolves per assembly from the live state.
     yield ctx.systemPrompt.section({
       name: 'caveman',
@@ -54,7 +60,7 @@ export function apply(ctx: Context): void {
       name: 'caveman-on',
       description: '开启输出精简（caveman 模式）',
       handler: async () => {
-        await scope.update({ enabled: true })
+        await scope?.update({ enabled: true })
         return { kind: 'success', text: `输出精简已开启（档位 ${state.level}）` }
       },
     })
@@ -63,7 +69,7 @@ export function apply(ctx: Context): void {
       name: 'caveman-off',
       description: '关闭输出精简',
       handler: async () => {
-        await scope.update({ enabled: false })
+        await scope?.update({ enabled: false })
         return { kind: 'success', text: '输出精简已关闭' }
       },
     })
@@ -71,12 +77,12 @@ export function apply(ctx: Context): void {
     yield ctx.commands.register({
       name: 'caveman-level',
       description: '切换档位：lite / full / ultra / wenyan-full',
-      handler: async (invocation) => {
+      handler: async (invocation: any) => {
         const raw = invocation.rawInput.trim().toLowerCase()
         if (!Object.hasOwn(LEVELS, raw)) {
           return { kind: 'error', text: `未知档位「${raw}」，可选：${Object.keys(LEVELS).join(' / ')}` }
         }
-        await scope.update({ level: raw as CavemanLevel, enabled: true })
+        await scope?.update({ level: raw as CavemanLevel, enabled: true })
         return { kind: 'success', text: `档位已切到 ${raw}` }
       },
     })
@@ -85,7 +91,7 @@ export function apply(ctx: Context): void {
       name: 'caveman-status',
       description: '查看输出精简状态',
       handler: async () => {
-        const cur = scope.get()
+        const cur = scope !== undefined ? scope.get() : state
         return {
           kind: 'success',
           text: cur.enabled ? `输出精简：开启（档位 ${cur.level}）` : '输出精简：关闭',
