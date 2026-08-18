@@ -49,3 +49,9 @@
   font-weight: 500;
   color: var(--dsw-color-text, rgba(0, 0, 0, 0.85));
 }
+
+.warning {
+  font-size: 12px;
+  color: var(--dsw-color-danger, #d32f2f);
+  line-height: 1.5;
+}
