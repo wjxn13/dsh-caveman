@@ -25,9 +25,19 @@ const NS = 'dsh-caveman'
 export const inject = ['slots', 'locale', 'connection', 'remote', 'settingsScope']
 
 export function apply(ctx: ClientContext): void {
+  console.error('[dsh-caveman client] apply() entered')
   ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'dsh-caveman: copy dictionaries')
 
+  const connection = (ctx as any).get('connection')
+  console.error('[dsh-caveman client] connection present:', connection !== undefined, 'isLoopback:', connection?.isLoopback)
+
   const scope = ctx.settingsScope.bind<CavemanConfig>({ namespace: 'dsh-caveman' })
+  console.error('[dsh-caveman client] bind done, initial snapshot:', JSON.stringify(scope.getSnapshot()))
+
+  setTimeout(() => {
+    console.error('[dsh-caveman client] snapshot after 2s:', JSON.stringify(scope.getSnapshot()))
+  }, 2000)
+
   const useSnapshot = bindSnapshotSelector(scope)
   const t = ctx.locale.bind(NS) as CavemanPanelInjected['t']
 
